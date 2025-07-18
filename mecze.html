@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <title>Moje mecze</title>
+  <style>
+    body { font-family: Arial; margin: 20px; }
+    .tab { display: none; }
+    .tab.active { display: block; }
+    button { margin: 5px; }
+    input, textarea { display: block; margin: 5px 0; width: 100%; }
+  </style>
+</head>
+<body>
+
+<h2>Dane o meczach</h2>
+
+<!-- Zakładki -->
+<button onclick="showTab('dodaj')">➕ Dodaj mecz</button>
+<button onclick="showTab('szukaj')">🔍 Wyszukaj zawodnika</button>
+
+<!-- Zakładka 1: Dodaj mecz -->
+<div id="dodaj" class="tab active">
+  <h3>Dodaj mecz</h3>
+  <form id="formMecz">
+    <input name="data" placeholder="Data meczu (DD-MM-RRRR)" required>
+    <input name="przeciwnik" placeholder="Drużyna przeciwna" required>
+    <input name="ocena" type="number" min="1" max="5" placeholder="Ocena meczu" required>
+    <input name="najlepszy" placeholder="Najlepszy zawodnik" required>
+    <input name="zawodnik1" placeholder="Zawodnik 1 - Jaguar" required>
+    <input name="zawodnik2" placeholder="Zawodnik 2 - Jaguar" required>
+    <input name="zawodnik3" placeholder="Zawodnik 3 - Jaguar" required>
+    <input name="przeciwnik1" placeholder="Zawodnik 1 - Przeciwnik" required>
+    <input name="przeciwnik2" placeholder="Zawodnik 2 - Przeciwnik" required>
+    <input name="przeciwnik3" placeholder="Zawodnik 3 - Przeciwnik" required>
+    <textarea name="opis" placeholder="Opis meczu (opcjonalnie)"></textarea>
+    <button type="submit">💾 Zapisz mecz</button>
+  </form>
+</div>
+
+<!-- Zakładka 2: Szukaj -->
+<div id="szukaj" class="tab">
+  <h3>Wyszukaj zawodnika</h3>
+  <input id="szukajInput" placeholder="Wpisz nazwisko">
+  <div id="wyniki"></div>
+</div>
+
+<script>
+  function showTab(tabId) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.getElementById(tabId).classList.add('active');
+  }
+
+  const form = document.getElementById('formMecz');
+  const wyniki = document.getElementById('wyniki');
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    const dane = new FormData(form);
+    const mecz = Object.fromEntries(dane.entries());
+
+    let mecze = JSON.parse(localStorage.getItem('mecze') || '[]');
+    mecze.push(mecz);
+    localStorage.setItem('mecze', JSON.stringify(mecze));
+
+    alert("✅ Mecz zapisany!");
+    form.reset();
+  });
+
+  document.getElementById('szukajInput').addEventListener('input', function () {
+    const tekst = this.value.toLowerCase();
+    const mecze = JSON.parse(localStorage.getItem('mecze') || '[]');
+
+    const znalezione = mecze.filter(m =>
+      m.najlepszy.toLowerCase().includes(tekst) ||
+      m.zawodnik1.toLowerCase().includes(tekst) ||
+      m.zawodnik2.toLowerCase().includes(tekst) ||
+      m.zawodnik3.toLowerCase().includes(tekst) ||
+      m.przeciwnik1.toLowerCase().includes(tekst) ||
+      m.przeciwnik2.toLowerCase().includes(tekst) ||
+      m.przeciwnik3.toLowerCase().includes(tekst)
+    );
+
+    wyniki.innerHTML = znalezione.map(m => `
+      <div style="border-bottom:1px solid #ccc; margin-bottom:10px;">
+        <strong>${m.data} vs ${m.przeciwnik}</strong><br>
+        Najlepszy: ${m.najlepszy}<br>
+        Ocena meczu: ${m.ocena}<br>
+        Opis: ${m.opis || "(brak)"}
+      </div>
+    `).join('');
+  });
+</script>
+
+</body>
+</html>
